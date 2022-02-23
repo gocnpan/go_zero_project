@@ -1,0 +1,8 @@
+{
+  "proxies": {
+    "default": {
+      "httpProxy": "http://192.168.0.102:10809",
+      "httpsProxy": "http://192.168.0.102:10809"
+    }
+  }
+}

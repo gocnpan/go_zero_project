@@ -13,3 +13,9 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+
+.idea
+# 运行数据
+data/mysql
+data/redis
+
