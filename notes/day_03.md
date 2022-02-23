@@ -7,8 +7,7 @@
    - 因此在win10，需要将`$GOPATH/bin`添加到环境变量中
 
 2. 安装 protoc
-   - 去这里https://github.com/google/protobuf/releases
-      - 下载对应的protoc，我这里下的是protoc-3.14.0-win64.zip
+   - 去 [这里](https://github.com/google/protobuf/releases) 下载对应的protoc，我这里下的是protoc-3.19.0-win64.zip
    - 下好之后解压就行，然后把bin里面的protoc.exe加入到环境变量，并且把protoc.exe拷贝到C:\Windows\System32
  
 3. 安装 protoc-gen-go（使用）

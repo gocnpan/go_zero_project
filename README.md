@@ -16,3 +16,5 @@ Docker Desktop 4.5.1 (74721)（the newest version available.）
 目录
 - [第一天](notes/day_01.md)
 - 第二天：初始化mall & 创建目录
+- [第三天](notes/day_03.md)
+- 第四天：同第三天
