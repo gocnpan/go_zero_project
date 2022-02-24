@@ -13,8 +13,14 @@
 docker
 Docker Desktop 4.5.1 (74721)（the newest version available.）
 
+sudo chmod 666 /var/run/docker.sock
+
 目录
+- [依赖模块简介](notes/module_intro.md)
+- [code代码阅读](notes/code_read_01.md)
 - [第一天](notes/day_01.md)
 - 第二天：初始化mall & 创建目录
 - [第三天](notes/day_03.md)
 - 第四天：同第三天
+- [GO-ZERO示例简介](notes/zero_intro.md)
+- [GRPC示例简介](notes/grpc_intro.md)

@@ -23,11 +23,11 @@ func main() {
 
 	var c config.Config
 	conf.MustLoad(*configFile, &c)
-	ctx := svc.NewServiceContext(c)
-	srv := server.NewUserServer(ctx)
+	ctx := svc.NewServiceContext(c) // 注册数据服务
+	srv := server.NewUserServer(ctx) // 获取服务端RPC 方法
 
 	s := zrpc.MustNewServer(c.RpcServerConf, func(grpcServer *grpc.Server) {
-		user.RegisterUserServer(grpcServer, srv)
+		user.RegisterUserServer(grpcServer, srv) // 在grpc中注册 方法
 
 		if c.Mode == service.DevMode || c.Mode == service.TestMode {
 			reflection.Register(grpcServer)

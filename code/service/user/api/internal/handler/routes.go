@@ -25,6 +25,7 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 		},
 	)
 
+	// 带权限校验
 	server.AddRoutes(
 		[]rest.Route{
 			{

@@ -6,7 +6,7 @@ import (
 )
 
 type Config struct {
-	rest.RestConf
+	rest.RestConf  // restful 结构体
 	Auth struct {
 		AccessSecret string
 		AccessExpire int64

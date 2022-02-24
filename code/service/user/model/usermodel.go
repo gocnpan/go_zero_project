@@ -14,9 +14,13 @@ import (
 )
 
 var (
-	userFieldNames          = builder.RawFieldNames(&User{})
+	// User 结构体：对应mysql中的字段
+	userFieldNames          = builder.RawFieldNames(&User{}) // 将 User结构体 转换为 字段slice
+	// 字段名构成的字符串
 	userRows                = strings.Join(userFieldNames, ",")
+	// 除去自动填充的字段，组成字符串
 	userRowsExpectAutoSet   = strings.Join(stringx.Remove(userFieldNames, "`id`", "`create_time`", "`update_time`"), ",")
+	// 除去自动填充字段，组成求值sql语句，如 name=?,gender=?,mobile=?...
 	userRowsWithPlaceHolder = strings.Join(stringx.Remove(userFieldNames, "`id`", "`create_time`", "`update_time`"), "=?,") + "=?"
 
 	cacheUserIdPrefix     = "cache:user:id:"
@@ -48,6 +52,7 @@ type (
 	}
 )
 
+// NewUserModel 返回 UserModel：用于数据填充
 func NewUserModel(conn sqlx.SqlConn, c cache.CacheConf) UserModel {
 	return &defaultUserModel{
 		CachedConn: sqlc.NewConn(conn, c),
