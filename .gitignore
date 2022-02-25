@@ -19,3 +19,7 @@
 data/mysql
 data/redis
 
+docker_gitlab/gitlab/config
+docker_gitlab/gitlab/data
+docker_gitlab/gitlab/logs
+

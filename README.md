@@ -24,3 +24,4 @@ sudo chmod 666 /var/run/docker.sock
 - 第四天：同第三天
 - [GO-ZERO示例简介](notes/zero_intro.md)
 - [GRPC示例简介](notes/grpc_intro.md)
+- [Gitlab安装使用](notes/gitlab_use.md)
