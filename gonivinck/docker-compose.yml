@@ -124,8 +124,8 @@ services:
       context: ./prometheus
     environment:
       - TZ=${TZ}
-    # volumes:
-      # - ./prometheus/prometheus.yml:/opt/bitnami/prometheus/conf/prometheus.yml  # 将 prometheus 配置文件挂载到容器里
+    volumes:
+      - /e/code/golang/go_zero_project/gonivinck/prometheus/prometheus.yml:/opt/bitnami/prometheus/conf/prometheus.yml  # 将 prometheus 配置文件挂载到容器里
     ports:
       - "${PROMETHEUS_PORT}:9090"                     # 设置容器9090端口映射指定宿主机端口，用于宿主机访问可视化web
     networks:
