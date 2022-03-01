@@ -22,6 +22,10 @@ sudo chmod 666 /var/run/docker.sock
 - 第二天：初始化mall & 创建目录
 - [第三天](notes/day_03.md)
 - 第四天：同第三天
+- [第七天](notes/day_07.md)
+- [第八天](notes/day_08.md)
+- [第九天](notes/day_09.md)
+- [第十天](notes/day_10.md)
 - [GO-ZERO示例简介](notes/zero_intro.md)
 - [GRPC示例简介](notes/grpc_intro.md)
 - [Gitlab安装使用](notes/gitlab_use.md)
