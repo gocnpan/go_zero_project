@@ -12,7 +12,7 @@ import (
 	"github.com/zeromicro/go-zero/rest"
 )
 
-// 从 etc 配置文件中读取 config
+// 从 etc 配置文件中读取 config（默认值为etc/user.yaml）
 var configFile = flag.String("f", "etc/user.yaml", "the config file")
 
 func main() {

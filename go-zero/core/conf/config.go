@@ -23,7 +23,8 @@ func LoadConfig(file string, v interface{}, opts ...Option) error {
 		return err
 	}
 
-	loader, ok := loaders[path.Ext(file)]
+	// path.Ext 获取文件尾缀
+	loader, ok := loaders[path.Ext(file)] // 根据不同的文件类型，赋值不同的方法处理
 	if !ok {
 		return fmt.Errorf("unrecognized file type: %s", file)
 	}

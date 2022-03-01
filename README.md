@@ -1,7 +1,7 @@
 # About
 用于记录 [带你十天轻松搞定 Go 微服务系列](https://juejin.cn/user/2348212566892574/posts) 的学习笔记
 
-## 环境
+## 笔记产生环境
 
 系统
 - 版本	Windows 10 专业版
@@ -13,7 +13,7 @@
 docker
 Docker Desktop 4.5.1 (74721)（the newest version available.）
 
-sudo chmod 666 /var/run/docker.sock
+在使用vscode运行docker compose时获取权限：sudo chmod 666 /var/run/docker.sock
 
 目录
 - [依赖模块简介](notes/module_intro.md)
