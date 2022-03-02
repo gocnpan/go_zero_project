@@ -22,7 +22,7 @@ type (
 	jwtSetting struct {
 		enabled    bool
 		secret     string
-		prevSecret string
+		prevSecret string // 旧密钥 用于新旧密钥切换的过渡期
 	}
 
 	signatureSetting struct {
@@ -31,10 +31,10 @@ type (
 	}
 
 	featuredRoutes struct {
-		timeout   time.Duration
-		priority  bool
+		timeout   time.Duration // 超时
+		priority  bool // 优先权
 		jwt       jwtSetting
-		signature signatureSetting
-		routes    []Route
+		signature signatureSetting // 签名
+		routes    []Route // 路由
 	}
 )

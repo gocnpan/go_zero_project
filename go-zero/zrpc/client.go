@@ -48,26 +48,31 @@ func MustNewClient(c RpcClientConf, options ...ClientOption) Client {
 // NewClient returns a Client.
 func NewClient(c RpcClientConf, options ...ClientOption) (Client, error) {
 	var opts []ClientOption
-	if c.HasCredential() {
+	if c.HasCredential() { // 查看是否有权限校验凭证
 		opts = append(opts, WithDialOption(grpc.WithPerRPCCredentials(&auth.Credential{
 			App:   c.App,
 			Token: c.Token,
 		})))
 	}
-	if c.NonBlock {
+	if c.NonBlock { // 非阻塞
 		opts = append(opts, WithNonBlock())
 	}
-	if c.Timeout > 0 {
+	if c.Timeout > 0 { // 超时
 		opts = append(opts, WithTimeout(time.Duration(c.Timeout)*time.Millisecond))
 	}
 
 	opts = append(opts, options...)
 
+	// 构建 链接
+	// 有2种方式：
+	// 1. etcd服务发现：host(etcd service name:port) + key		discov://etcd:2379/user.rpc
+	// 2. rpc直连：endpoints
 	target, err := c.BuildTarget()
 	if err != nil {
 		return nil, err
 	}
 
+	// 新建 rpc 客户端
 	client, err := internal.NewClient(target, opts...)
 	if err != nil {
 		return nil, err

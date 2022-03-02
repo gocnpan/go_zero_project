@@ -24,7 +24,7 @@ var (
 )
 
 type patRouter struct {
-	trees      map[string]*search.Tree
+	trees      map[string]*search.Tree // search.Tree 是搜索树
 	notFound   http.Handler
 	notAllowed http.Handler
 }
@@ -36,21 +36,34 @@ func NewRouter() httpx.Router {
 	}
 }
 
+// Handle
+// method：http 请求方法
+// reqPath：http 请求路径
+// handler：响应 handler，包括预置、用户的 middleware
 func (pr *patRouter) Handle(method, reqPath string, handler http.Handler) error {
-	if !validMethod(method) {
+	if !validMethod(method) { // 方法校验
 		return ErrInvalidMethod
 	}
 
-	if len(reqPath) == 0 || reqPath[0] != '/' {
+	if len(reqPath) == 0 || reqPath[0] != '/' { // 路径校验
 		return ErrInvalidPath
 	}
 
+	// 请求路径预处理
+	//	1. Replace multiple slashes with a single slash. "//"->"/"
+	//	2. Eliminate each . path name element (the current directory).
+	//	3. Eliminate each inner .. path name element (the parent directory)
+	//	   along with the non-.. element that precedes it.
+	//	4. Eliminate .. elements that begin a rooted path:
+	//	   that is, replace "/.." by "/" at the beginning of a path.
 	cleanPath := path.Clean(reqPath)
 	tree, ok := pr.trees[method]
-	if ok {
-		return tree.Add(cleanPath, handler)
+	if ok { // 该方法的搜索树已被初始化
+		return tree.Add(cleanPath, handler) // 添加 路径 & 处理方法
 	}
 
+	// 未初始化的搜索树
+	// 需要初始化
 	tree = search.NewTree()
 	pr.trees[method] = tree
 	return tree.Add(cleanPath, handler)

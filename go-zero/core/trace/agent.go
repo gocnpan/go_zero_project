@@ -30,19 +30,21 @@ func StartAgent(c Config) {
 	lock.Lock()
 	defer lock.Unlock()
 
+	// 确保一次性配置 ？
 	_, ok := agents[c.Endpoint]
 	if ok {
 		return
 	}
 
 	// if error happens, let later calls run.
-	if err := startAgent(c); err != nil {
+	if err := startAgent(c); err != nil { // 如果有错，则 允许下次 运行，这就是为什么不用 sync.Once？
 		return
 	}
 
 	agents[c.Endpoint] = lang.Placeholder
 }
 
+// createExporter 根据 Batcher 返回 jaeger | zipkin
 func createExporter(c Config) (sdktrace.SpanExporter, error) {
 	// Just support jaeger and zipkin now, more for later
 	switch c.Batcher {

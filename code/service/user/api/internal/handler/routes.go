@@ -25,7 +25,7 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 		},
 	)
 
-	// 带权限校验
+	// 带 jwt 权限校验
 	server.AddRoutes(
 		[]rest.Route{
 			{
@@ -34,6 +34,8 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Handler: UserInfoHandler(serverCtx),
 			},
 		},
+		// 配置方法
+		// 为请求附加可用jwt & 密钥信息
 		rest.WithJwt(serverCtx.Config.Auth.AccessSecret),
 	)
 }

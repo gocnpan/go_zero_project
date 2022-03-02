@@ -59,6 +59,7 @@ func NewTree() *Tree {
 }
 
 // Add adds item to associate with route.
+// item 在路径搜索树中，是相应路径的处理方法
 func (t *Tree) Add(route string, item interface{}) error {
 	if len(route) == 0 || route[0] != slash {
 		return errNotFromRoot

@@ -15,7 +15,7 @@ type StartOption func(srv *http.Server)
 // StartHttp starts a http server.
 func StartHttp(host string, port int, handler http.Handler, opts ...StartOption) error {
 	return start(host, port, handler, func(srv *http.Server) error {
-		return srv.ListenAndServe()
+		return srv.ListenAndServe() // 开启 http 服务
 	}, opts...)
 }
 
@@ -28,6 +28,11 @@ func StartHttps(host string, port int, certFile, keyFile string, handler http.Ha
 	}, opts...)
 }
 
+// start
+// handler 结构如下，在 go-zero/rest/router/patrouter.go 中定义
+// 		patRouter{
+//			trees: make(map[string]*search.Tree),
+//		}
 func start(host string, port int, handler http.Handler, run func(srv *http.Server) error,
 	opts ...StartOption) (err error) {
 	server := &http.Server{
@@ -38,7 +43,7 @@ func start(host string, port int, handler http.Handler, run func(srv *http.Serve
 		opt(server)
 	}
 
-	waitForCalled := proc.AddWrapUpListener(func() {
+	waitForCalled := proc.AddWrapUpListener(func() { // 关闭监听器
 		if e := server.Shutdown(context.Background()); err != nil {
 			logx.Error(e)
 		}

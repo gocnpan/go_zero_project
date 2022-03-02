@@ -1,4 +1,5 @@
-# 功能
+文件：[core/conf/config.go](../core/conf/config.go)
+## 简介
 根据传入的文件，将配置项填入配置参数（v）
 
 ## config.go `MustLoad` --》 `LoadConfig`

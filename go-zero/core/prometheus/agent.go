@@ -27,7 +27,7 @@ func StartAgent(c Config) {
 		return
 	}
 
-	once.Do(func() {
+	once.Do(func() { // 一次性调用，不可重复调用
 		enabled.Set(true)
 		threading.GoSafe(func() {
 			http.Handle(c.Path, promhttp.Handler())

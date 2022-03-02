@@ -20,7 +20,10 @@ type (
 
 	// A Server is a http server.
 	Server struct {
+		// 服务 核心？中间数据？
+		// 记录内容：路由、handler、middleware等内容
 		ngin   *engine
+		// http 服务者
 		router httpx.Router
 	}
 )
@@ -40,13 +43,13 @@ func MustNewServer(c RestConf, opts ...RunOption) *Server {
 // NewServer returns a server with given config of c and options defined in opts.
 // Be aware that later RunOption might overwrite previous one that write the same option.
 func NewServer(c RestConf, opts ...RunOption) (*Server, error) {
-	if err := c.SetUp(); err != nil {
+	if err := c.SetUp(); err != nil { // 开启各项服务
 		return nil, err
 	}
 
 	server := &Server{
-		ngin:   newEngine(c),
-		router: router.NewRouter(),
+		ngin:   newEngine(c), // 服务中间体，会根据配置项配置，含自适应降载
+		router: router.NewRouter(), // router 搜索树-字典树
 	}
 
 	opts = append([]RunOption{WithNotFoundHandler(nil)}, opts...)
@@ -58,17 +61,19 @@ func NewServer(c RestConf, opts ...RunOption) (*Server, error) {
 }
 
 // AddRoutes add given routes into the Server.
+// 添加多个路由
 func (s *Server) AddRoutes(rs []Route, opts ...RouteOption) {
 	r := featuredRoutes{
 		routes: rs,
 	}
-	for _, opt := range opts {
+	for _, opt := range opts { // 运行：配置 featuredRoutes 参数的方法
 		opt(&r)
 	}
 	s.ngin.addRoutes(r)
 }
 
 // AddRoute adds given route into the Server.
+// 添加单个路由
 func (s *Server) AddRoute(r Route, opts ...RouteOption) {
 	s.AddRoutes([]Route{r}, opts...)
 }
@@ -93,7 +98,7 @@ func (s *Server) Use(middleware Middleware) {
 // ToMiddleware converts the given handler to a Middleware.
 func ToMiddleware(handler func(next http.Handler) http.Handler) Middleware {
 	return func(handle http.HandlerFunc) http.HandlerFunc {
-		return handler(handle).ServeHTTP
+		return handler(handle).ServeHTTP // 返回结果为 interface 类型，此处进行类型转换
 	}
 }
 
@@ -126,6 +131,7 @@ func WithJwt(secret string) RouteOption {
 
 // WithJwtTransition returns a func to enable jwt authentication as well as jwt secret transition.
 // Which means old and new jwt secrets work together for a period.
+// 新旧 jwt 密钥共用时期
 func WithJwtTransition(secret, prevSecret string) RouteOption {
 	return func(r *featuredRoutes) {
 		// why not validate prevSecret, because prevSecret is an already used one,

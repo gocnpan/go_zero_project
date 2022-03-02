@@ -34,11 +34,11 @@ type (
 		CertFile string `json:",optional"`
 		KeyFile  string `json:",optional"`
 		Verbose  bool   `json:",optional"`
-		MaxConns int    `json:",default=10000"`
+		MaxConns int    `json:",default=10000"` // 最大连接数
 		MaxBytes int64  `json:",default=1048576"`
 		// milliseconds
 		Timeout      int64         `json:",default=3000"`
-		CpuThreshold int64         `json:",default=900,range=[0:1000]"`
+		CpuThreshold int64         `json:",default=900,range=[0:1000]"` // cpu 线程数 用于 自适应降载保护
 		Signature    SignatureConf `json:",optional"`
 	}
 )

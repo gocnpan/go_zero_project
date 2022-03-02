@@ -7,8 +7,8 @@
 
 文件目录说明
 - `core`
-  - `conf`            读取并写入配置
-  - `mapping`     将文件中的配置项转换为`struct`结构
+  - `conf`             读取并写入配置
+  - `mapping`       将文件中的配置项转换为`struct`结构
 
 ## 目录
-- [core/conf](readme/core_conf.md) 读取并填入配置项
+- [`user/api`入口](readme/user_api_api.go.md) 从 `api.go` 的 `main` 方法入手

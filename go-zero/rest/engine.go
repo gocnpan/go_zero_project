@@ -26,11 +26,11 @@ var ErrSignatureConfig = errors.New("bad config for Signature")
 type engine struct {
 	conf                 RestConf
 	routes               []featuredRoutes
-	unauthorizedCallback handler.UnauthorizedCallback
-	unsignedCallback     handler.UnsignedCallback
-	middlewares          []Middleware
-	shedder              load.Shedder
-	priorityShedder      load.Shedder
+	unauthorizedCallback handler.UnauthorizedCallback // 未授权回调
+	unsignedCallback     handler.UnsignedCallback // 未签名回调
+	middlewares          []Middleware // 中间件
+	shedder              load.Shedder // 降载
+	priorityShedder      load.Shedder // 优先降载
 	tlsConfig            *tls.Config
 }
 
@@ -38,7 +38,7 @@ func newEngine(c RestConf) *engine {
 	srv := &engine{
 		conf: c,
 	}
-	if c.CpuThreshold > 0 {
+	if c.CpuThreshold > 0 { // 自适应降载配置
 		srv.shedder = load.NewAdaptiveShedder(load.WithCpuThreshold(c.CpuThreshold))
 		srv.priorityShedder = load.NewAdaptiveShedder(load.WithCpuThreshold(
 			(c.CpuThreshold + topCpuUsage) >> 1))
@@ -68,7 +68,7 @@ func (ng *engine) appendAuthHandler(fr featuredRoutes, chain alice.Chain,
 }
 
 func (ng *engine) bindFeaturedRoutes(router httpx.Router, fr featuredRoutes, metrics *stat.Metrics) error {
-	verifier, err := ng.signatureVerifier(fr.signature)
+	verifier, err := ng.signatureVerifier(fr.signature) // 签名校验
 	if err != nil {
 		return err
 	}
@@ -82,28 +82,31 @@ func (ng *engine) bindFeaturedRoutes(router httpx.Router, fr featuredRoutes, met
 	return nil
 }
 
+// bindRoute 绑定路由
+// 增加 go-zero 预配置中间件
 func (ng *engine) bindRoute(fr featuredRoutes, router httpx.Router, metrics *stat.Metrics,
 	route Route, verifier func(chain alice.Chain) alice.Chain) error {
-	chain := alice.New(
-		handler.TracingHandler(ng.conf.Name, route.Path),
-		ng.getLogHandler(),
-		handler.PrometheusHandler(route.Path),
-		handler.MaxConns(ng.conf.MaxConns),
-		handler.BreakerHandler(route.Method, route.Path, metrics),
-		handler.SheddingHandler(ng.getShedder(fr.priority), metrics),
-		handler.TimeoutHandler(ng.checkedTimeout(fr.timeout)),
-		handler.RecoverHandler,
-		handler.MetricHandler(metrics),
-		handler.MaxBytesHandler(ng.conf.MaxBytes),
-		handler.GunzipHandler,
+	chain := alice.New( // 为路由增加 中间件
+		handler.TracingHandler(ng.conf.Name, route.Path), // 链路跟踪
+		ng.getLogHandler(), // 日志处理
+		handler.PrometheusHandler(route.Path), // Prometheus
+		handler.MaxConns(ng.conf.MaxConns), // 最大连接数限制
+		handler.BreakerHandler(route.Method, route.Path, metrics), // 中断连接
+		handler.SheddingHandler(ng.getShedder(fr.priority), metrics), // 降载
+		handler.TimeoutHandler(ng.checkedTimeout(fr.timeout)), // 超时
+		handler.RecoverHandler, // 恢复
+		handler.MetricHandler(metrics), // 统计指标
+		handler.MaxBytesHandler(ng.conf.MaxBytes), // 最大数据包
+		handler.GunzipHandler, // 解压
 	)
-	chain = ng.appendAuthHandler(fr, chain, verifier)
+	chain = ng.appendAuthHandler(fr, chain, verifier) // 权限校验中间件
 
 	for _, middleware := range ng.middlewares {
-		chain = chain.Append(convertMiddleware(middleware))
+		chain = chain.Append(convertMiddleware(middleware)) // 用户中间件插入
 	}
 	handle := chain.ThenFunc(route.Handler)
 
+	// router.Handle 在 go-zero/rest/router/patrouter.go 中定义
 	return router.Handle(route.Method, route.Path, handle)
 }
 
@@ -217,6 +220,10 @@ func (ng *engine) signatureVerifier(signature signatureSetting) (func(chain alic
 		decrypters[fingerprint] = decrypter
 	}
 
+	// Chain acts as a list of http.Handler constructors.
+	// Chain is effectively immutable:
+	// once created, it will always hold
+	// the same set of constructors in the same order.
 	return func(chain alice.Chain) alice.Chain {
 		if ng.unsignedCallback != nil {
 			return chain.Append(handler.ContentSecurityHandler(
@@ -228,15 +235,21 @@ func (ng *engine) signatureVerifier(signature signatureSetting) (func(chain alic
 	}, nil
 }
 
+// start restful 引擎开启
 func (ng *engine) start(router httpx.Router) error {
-	if err := ng.bindRoutes(router); err != nil {
+	// bindRoute 方法
+	// 会绑定预设的配置方法：如链路跟踪、降载、解压等中间件
+	// 同时绑定用户中间件
+	// handler方法以中间件形式最后插入 chain --> handle
+	if err := ng.bindRoutes(router); err != nil { // 路由 & handler & middleware 绑定
 		return err
 	}
 
-	if len(ng.conf.CertFile) == 0 && len(ng.conf.KeyFile) == 0 {
+	if len(ng.conf.CertFile) == 0 && len(ng.conf.KeyFile) == 0 { // 没有 ssl 证书，则开启 http 服务
 		return internal.StartHttp(ng.conf.Host, ng.conf.Port, router)
 	}
 
+	// 有 ssl 证书，开启 https 服务
 	return internal.StartHttps(ng.conf.Host, ng.conf.Port, ng.conf.CertFile,
 		ng.conf.KeyFile, router, func(srv *http.Server) {
 			if ng.tlsConfig != nil {
@@ -245,6 +258,7 @@ func (ng *engine) start(router httpx.Router) error {
 		})
 }
 
+// 添加中间件
 func (ng *engine) use(middleware Middleware) {
 	ng.middlewares = append(ng.middlewares, middleware)
 }

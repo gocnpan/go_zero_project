@@ -70,17 +70,17 @@ func (sc RpcServerConf) Validate() error {
 
 // BuildTarget builds the rpc target from the given config.
 func (cc RpcClientConf) BuildTarget() (string, error) {
-	if len(cc.Endpoints) > 0 {
+	if len(cc.Endpoints) > 0 { // 端点 构建，RPC直连
 		return resolver.BuildDirectTarget(cc.Endpoints), nil
-	} else if len(cc.Target) > 0 {
+	} else if len(cc.Target) > 0 { // 直接返回给定目标
 		return cc.Target, nil
 	}
 
-	if err := cc.Etcd.Validate(); err != nil {
+	if err := cc.Etcd.Validate(); err != nil { // etcd配置项有误
 		return "", err
 	}
 
-	if cc.Etcd.HasAccount() {
+	if cc.Etcd.HasAccount() { // 有账号密码的情况
 		discov.RegisterAccount(cc.Etcd.Hosts, cc.Etcd.User, cc.Etcd.Pass)
 	}
 	if cc.Etcd.HasTLS() {
@@ -90,6 +90,7 @@ func (cc RpcClientConf) BuildTarget() (string, error) {
 		}
 	}
 
+	// etcd 服务发现
 	return resolver.BuildDiscovTarget(cc.Etcd.Hosts, cc.Etcd.Key), nil
 }
 
