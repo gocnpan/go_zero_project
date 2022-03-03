@@ -32,8 +32,8 @@ func NewUserClient(cc grpc.ClientConnInterface) UserClient {
 }
 
 func (c *userClient) Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error) {
-	out := new(LoginResponse)
-	err := c.cc.Invoke(ctx, "/userclient.User/Login", in, out, opts...)
+	out := new(LoginResponse) // 回复内容
+	err := c.cc.Invoke(ctx, "/userclient.User/Login", in, out, opts...) // 一次性请求 区别于 NewStream（主要用于大通量数据） 数据流
 	if err != nil {
 		return nil, err
 	}

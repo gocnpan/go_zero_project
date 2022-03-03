@@ -23,8 +23,11 @@ type pingedDB struct {
 }
 
 func getCachedSqlConn(driverName, server string) (*pingedDB, error) {
+	// driverName 是 mysqlDriverName -> "mysql"
+	// server 是 资源链接 data source -> "root:123456@tcp(mysql:3306)/mall?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai"
+	// GetResource 方法 实现一次创建，共享连接的功能，防止多次创建
 	val, err := connManager.GetResource(server, func() (io.Closer, error) {
-		conn, err := newDBConnection(driverName, server)
+		conn, err := newDBConnection(driverName, server) // 创建 DB 连接，并进行相关配置
 		if err != nil {
 			return nil, err
 		}
@@ -41,12 +44,13 @@ func getCachedSqlConn(driverName, server string) (*pingedDB, error) {
 }
 
 func getSqlConn(driverName, server string) (*sql.DB, error) {
+	// 获取可能已经创建的 db 连接
 	pdb, err := getCachedSqlConn(driverName, server)
 	if err != nil {
 		return nil, err
 	}
 
-	pdb.once.Do(func() {
+	pdb.once.Do(func() { // 测试能否连通
 		err = pdb.Ping()
 	})
 	if err != nil {
@@ -57,7 +61,7 @@ func getSqlConn(driverName, server string) (*sql.DB, error) {
 }
 
 func newDBConnection(driverName, datasource string) (*sql.DB, error) {
-	conn, err := sql.Open(driverName, datasource)
+	conn, err := sql.Open(driverName, datasource) // 创建 DB 连接
 	if err != nil {
 		return nil, err
 	}

@@ -28,6 +28,7 @@ var (
 )
 
 // Parse parses the request.
+// 解析路径参数、表单、头部、body等携带内容
 func Parse(r *http.Request, v interface{}) error {
 	if err := ParsePath(r, v); err != nil {
 		return err

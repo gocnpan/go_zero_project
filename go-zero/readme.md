@@ -11,4 +11,5 @@
   - `mapping`       将文件中的配置项转换为`struct`结构
 
 ## 目录
-- [`user/api`入口](readme/user_api_api.go.md) 从 `api.go` 的 `main` 方法入手
+- [`user/api`入口](readme/user_api_user.go.md) 从 `user.go` 的 `main` 方法入手
+- [`user/rpc`入口](readme/user_rpc_user.go.md) 从 `user.go` 的 `main` 方法入手

@@ -23,7 +23,10 @@ func main() {
 
 	var c config.Config
 	conf.MustLoad(*configFile, &c)
-	ctx := svc.NewServiceContext(c) // 注册数据服务
+	// 注册数据服务
+	// 创建 mysql 连接 struct 对象
+	// 传入 mysql & cache redis 连接，注册 user model
+	ctx := svc.NewServiceContext(c)
 	srv := server.NewUserServer(ctx) // 获取服务端RPC 方法
 
 	s := zrpc.MustNewServer(c.RpcServerConf, func(grpcServer *grpc.Server) {

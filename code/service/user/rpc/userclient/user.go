@@ -38,8 +38,8 @@ func NewUser(cli zrpc.Client) User {
 }
 
 func (m *defaultUser) Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error) {
-	client := user.NewUserClient(m.cli.Conn())
-	return client.Login(ctx, in, opts...)
+	client := user.NewUserClient(m.cli.Conn()) // 新客户端
+	return client.Login(ctx, in, opts...) // 输出 RPC回复内容 out, nil
 }
 
 func (m *defaultUser) Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error) {

@@ -14,7 +14,7 @@ type ServiceContext struct {
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
-	conn := sqlx.NewMysql(c.Mysql.DataSource) // 连接 mysql
+	conn := sqlx.NewMysql(c.Mysql.DataSource) // mysql 连接
 	return &ServiceContext{
 		Config:    c,
 		UserModel: model.NewUserModel(conn, c.CacheRedis), // 注册用户 model（含msql & redis）

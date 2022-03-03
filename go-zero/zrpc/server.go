@@ -32,7 +32,7 @@ func MustNewServer(c RpcServerConf, register internal.RegisterFn) *RpcServer {
 // NewServer returns a RpcServer.
 func NewServer(c RpcServerConf, register internal.RegisterFn) (*RpcServer, error) {
 	var err error
-	if err = c.Validate(); err != nil {
+	if err = c.Validate(); err != nil { // 开启权限校验之后，验证相关redis配置是否正确
 		return nil, err
 	}
 

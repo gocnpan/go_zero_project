@@ -93,11 +93,15 @@ type (
 func NewSqlConn(driverName, datasource string, opts ...SqlOption) SqlConn {
 	conn := &commonSqlConn{
 		connProv: func() (*sql.DB, error) {
+			// 数据库连接
+			// 通过 connManager.GetResource 保证对同一数据库只创建一次
 			return getSqlConn(driverName, datasource)
 		},
 		onError: func(err error) {
 			logInstanceError(datasource, err)
 		},
+		// 创建事务对象
+		// 事务的连接生命周期从 Begin 函数调用起，直到 Commit 和 Rollback 函数的调用结束。
 		beginTx: begin,
 		brk:     breaker.NewBreaker(),
 	}
