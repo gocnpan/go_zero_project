@@ -10,7 +10,7 @@ ENV http_proxy "http://192.168.*.*:*" \
 ENV https_proxy "http://192.168.*.*:*" \
 ENV ftp_proxy "http://192.168.*.*:*" \
 
-但是在其他环境使用该镜像时，需要重置该代理配置，更详细的内容：https://blog.csdn.net/erhaiou2008/article/details/107837344
+但是在其他环境使用该代理时，需要根据当前环境进行代理配置，更详细的内容：https://blog.csdn.net/erhaiou2008/article/details/107837344
 
 ## 创建项目
 
@@ -18,7 +18,7 @@ ENV ftp_proxy "http://192.168.*.*:*" \
 1. 在win10创建项目目录
 2. 在docker->dev environments选择目录
 3. 通过vs code创建并编写dockerfile、.env、docker-compose.yml
-4. 从 [GitHub](https://github.com/nivin-studio/gonivinck) 上下载相关dockerfile文件
+4. 从 [GitHub](https://github.com/nivin-studio/gonivinck) 上下载相关dockerfile文件，该项目为【十天系列的运行环境】
 5. 通过vs code 运行docker-compose.yml（docker compose up）
 ### 详细
 docker运行时的代理设置（区别于镜像）
@@ -43,7 +43,7 @@ docker运行时的代理设置（区别于镜像）
      - dockerfile文件内容，如果复制官方的内容，那么，需要注意当前文件是否有引用相对路径的文件，如果有则需要下载相应的文件夹到dockerfile文件处： \
        ![](img/d1-02.png)  \
        ![](img/d1-03.png)
-   - 在dockerfile中，因github被禁用，curl命令获取github内容，需要使用代理网站：https://ghproxy.com/
+   - 配置dockerfile代理即可 ~~在dockerfile中，因github被禁用，curl命令获取github内容，需要使用代理网站：https://ghproxy.com/~~
  
 
 5. 在vs code上对docker-compose.yml文件右键，docker compose up

@@ -24,6 +24,20 @@
    }
    ```
    - 实现：Login、Register、UserInfo服务
+   
+4. 配置`grpc`服务，传入`grpc`方法注册func
+   - 校验 redis 配置
+   - 获取运行环境指标对象 metrics，用于监测、降载等
+   - 有 etcd 时，在 etcd 注册 grpc 服务（并定时更新）
+   - 配置 rpc 服务
+   - 配置 rpc 服务拦截器：[自适应负载均衡](https://www.jianshu.com/p/71a3569ed205) 、超时、权限拦截
+   - 启动：日志、调测环境配置、链路跟踪、远程监控
+   ```go
+   rpcServer := &RpcServer{
+       server:   server, // rpc 服务对象
+       register: register, // rpc 服务方法注册 func 
+   }
+   ```
 
 ## gRPC 注册发现相关
 参考：[notes/grpc_intro.md](../../notes/grpc_intro.md)

@@ -48,17 +48,18 @@ func (s *rpcServer) SetName(name string) {
 }
 
 func (s *rpcServer) Start(register RegisterFn) error {
+	// rpc 服务启动
 	lis, err := net.Listen("tcp", s.address)
 	if err != nil {
 		return err
 	}
 
 	unaryInterceptors := []grpc.UnaryServerInterceptor{
-		serverinterceptors.UnaryTracingInterceptor,
-		serverinterceptors.UnaryCrashInterceptor,
-		serverinterceptors.UnaryStatInterceptor(s.metrics),
-		serverinterceptors.UnaryPrometheusInterceptor,
-		serverinterceptors.UnaryBreakerInterceptor,
+		serverinterceptors.UnaryTracingInterceptor, // 链路跟踪拦截器
+		serverinterceptors.UnaryCrashInterceptor, // 错误捕捉拦截器
+		serverinterceptors.UnaryStatInterceptor(s.metrics), // 状态指标拦截器
+		serverinterceptors.UnaryPrometheusInterceptor, // Prometheus 拦截器
+		serverinterceptors.UnaryBreakerInterceptor, // 熔断
 	}
 	unaryInterceptors = append(unaryInterceptors, s.unaryInterceptors...)
 	streamInterceptors := []grpc.StreamServerInterceptor{
@@ -70,7 +71,7 @@ func (s *rpcServer) Start(register RegisterFn) error {
 	options := append(s.options, WithUnaryServerInterceptors(unaryInterceptors...),
 		WithStreamServerInterceptors(streamInterceptors...))
 	server := grpc.NewServer(options...)
-	register(server)
+	register(server) // 方法注册
 	// we need to make sure all others are wrapped up
 	// so we do graceful stop at shutdown phase instead of wrap up phase
 	waitForCalled := proc.AddWrapUpListener(func() {

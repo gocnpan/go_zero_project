@@ -91,7 +91,7 @@ type UnsafeUserServer interface {
 }
 
 func RegisterUserServer(s grpc.ServiceRegistrar, srv UserServer) {
-	s.RegisterService(&User_ServiceDesc, srv)
+	s.RegisterService(&User_ServiceDesc, srv) // 方法注册
 }
 
 func _User_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {

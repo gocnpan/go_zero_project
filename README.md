@@ -1,5 +1,6 @@
 # Todo
-
+1. 手写grpc服务注册发现，实现负载均衡
+2. 阅读作者关于go-zero的文章
 
 
 # About
@@ -21,7 +22,6 @@ Docker Desktop 4.5.1 (74721)（the newest version available.）
 
 目录
 - [依赖模块简介](notes/module_intro.md)
-- [code代码阅读](notes/code_read_01.md)
 - [第一天](notes/day_01.md)
 - 第二天：初始化mall & 创建目录
 - [第三天](notes/day_03.md)
@@ -33,3 +33,5 @@ Docker Desktop 4.5.1 (74721)（the newest version available.）
 - [GO-ZERO示例简介](notes/zero_intro.md)
 - [GRPC示例简介](notes/grpc_intro.md)
 - [Gitlab安装使用](notes/gitlab_use.md)
+- [项目代码结构简介](notes/project_code.md)
+- [go-zero源码阅读](go-zero/readme.md)

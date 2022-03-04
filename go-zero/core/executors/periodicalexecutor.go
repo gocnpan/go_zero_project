@@ -57,7 +57,7 @@ func NewPeriodicalExecutor(interval time.Duration, container TaskContainer) *Per
 		},
 	}
 	proc.AddShutdownListener(func() {
-		executor.Flush()
+		executor.Flush() // 将当前服务的任务执行
 	})
 
 	return executor
@@ -74,10 +74,11 @@ func (pe *PeriodicalExecutor) Add(task interface{}) {
 // Flush forces pe to execute tasks.
 func (pe *PeriodicalExecutor) Flush() bool {
 	pe.enterExecution()
+	// 执行弹出的任务
 	return pe.executeTasks(func() interface{} {
 		pe.lock.Lock()
 		defer pe.lock.Unlock()
-		return pe.container.RemoveAll()
+		return pe.container.RemoveAll() // 弹出 container 的所有任务
 	}())
 }
 
@@ -162,6 +163,7 @@ func (pe *PeriodicalExecutor) executeTasks(tasks interface{}) bool {
 
 	ok := pe.hasTasks(tasks)
 	if ok {
+		// 执行任务
 		pe.container.Execute(tasks)
 	}
 

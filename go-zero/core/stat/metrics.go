@@ -60,10 +60,11 @@ func SetReportWriter(writer Writer) {
 func NewMetrics(name string) *Metrics {
 	container := &metricsContainer{
 		name: name,
-		pid:  os.Getpid(),
+		pid:  os.Getpid(), // 获取服务 id
 	}
 
 	return &Metrics{
+		// logInterval time.Minute 按分钟获取
 		executor:  executors.NewPeriodicalExecutor(logInterval, container),
 		container: container,
 	}
@@ -118,7 +119,7 @@ func (c *metricsContainer) AddTask(v interface{}) bool {
 }
 
 func (c *metricsContainer) Execute(v interface{}) {
-	pair := v.(tasksDurationPair)
+	pair := v.(tasksDurationPair) // interface 的类型转换
 	tasks := pair.tasks
 	duration := pair.duration
 	drops := pair.drops
@@ -180,6 +181,7 @@ func (c *metricsContainer) Execute(v interface{}) {
 	log(report)
 }
 
+// RemoveAll 弹出所有当前任务
 func (c *metricsContainer) RemoveAll() interface{} {
 	tasks := c.tasks
 	duration := c.duration
