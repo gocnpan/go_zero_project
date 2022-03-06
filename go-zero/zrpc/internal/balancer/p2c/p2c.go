@@ -79,26 +79,32 @@ func (p *p2cPicker) Pick(info balancer.PickInfo) (balancer.PickResult, error) {
 	var chosen *subConn
 	switch len(p.conns) {
 	case 0:
+		// 没有可用链接
 		return emptyPickResult, balancer.ErrNoSubConnAvailable
 	case 1:
+		// 只有一个链接
 		chosen = p.choose(p.conns[0], nil)
 	case 2:
 		chosen = p.choose(p.conns[0], p.conns[1])
-	default:
+	default: // 选择一个健康的节点
 		var node1, node2 *subConn
 		for i := 0; i < pickTimes; i++ {
+			// 随机数
 			a := p.r.Intn(len(p.conns))
 			b := p.r.Intn(len(p.conns) - 1)
 			if b >= a {
 				b++
 			}
+			// 随机获取所有节点中的两个节点
 			node1 = p.conns[a]
 			node2 = p.conns[b]
+			// 效验节点是否健康
 			if node1.healthy() && node2.healthy() {
 				break
 			}
 		}
 
+		// 选择其中一个节点
 		chosen = p.choose(node1, node2)
 	}
 
@@ -147,6 +153,8 @@ func (p *p2cPicker) buildDoneFunc(c *subConn) func(info balancer.DoneInfo) {
 	}
 }
 
+// choose
+// 对随机选择出来的节点进行负载比较从而最终确定选择哪个节点
 func (p *p2cPicker) choose(c1, c2 *subConn) *subConn {
 	start := int64(timex.Now())
 	if c2 == nil {

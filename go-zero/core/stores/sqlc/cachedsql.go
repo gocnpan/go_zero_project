@@ -137,6 +137,11 @@ func (cc CachedConn) QueryRowCtx(ctx context.Context, v interface{}, key string,
 }
 
 // QueryRowIndex unmarshals into v with given key.
+// v - 需要读取的数据对象
+// key - 通过索引生成的缓存key
+// keyer - 用主键生成基于主键缓存的key的方法
+// indexQuery - 用索引从DB读取完整数据的方法，需要返回主键
+// primaryQuery - 用主键从DB获取完整数据的方法
 func (cc CachedConn) QueryRowIndex(v interface{}, key string, keyer func(primary interface{}) string,
 	indexQuery IndexQueryFn, primaryQuery PrimaryQueryFn) error {
 	indexQueryCtx := func(_ context.Context, conn sqlx.SqlConn, v interface{}) (interface{}, error) {
@@ -150,30 +155,39 @@ func (cc CachedConn) QueryRowIndex(v interface{}, key string, keyer func(primary
 }
 
 // QueryRowIndexCtx unmarshals into v with given key.
+// 通过索引从DB里查询完整行记录，如有 error，返回
+// 查到完整行记录后，会把主键到完整行记录的缓存和索引到主键的缓存同时写到 redis 里
+// 返回所需的行记录数据
 func (cc CachedConn) QueryRowIndexCtx(ctx context.Context, v interface{}, key string,
 	keyer func(primary interface{}) string, indexQuery IndexQueryCtxFn,
 	primaryQuery PrimaryQueryCtxFn) error {
 	var primaryKey interface{}
 	var found bool
 
+	// 先通过索引查询缓存，看是否有索引到主键的缓存
 	if err := cc.cache.TakeWithExpireCtx(ctx, &primaryKey, key,
 		func(val interface{}, expire time.Duration) (err error) {
+			// 如果没有索引到主键的缓存，那么就通过索引查询完整数据
 			primaryKey, err = indexQuery(ctx, cc.db, v)
 			if err != nil {
 				return
 			}
 
+			// 通过索引查询到了完整数据，设置found，后面直接使用，不需要再从缓存读取数据了
 			found = true
+			// 将主键到完整数据的映射保存到缓存里，TakeWithExpire方法已经将索引到主键的映射保存到缓存了
 			return cc.cache.SetWithExpireCtx(ctx, keyer(primaryKey), v,
 				expire+cacheSafeGapBetweenIndexAndPrimary)
 		}); err != nil {
 		return err
 	}
 
+	// 已经通过索引找到了数据，直接返回即可
 	if found {
 		return nil
 	}
 
+	// 通过主键从缓存读取数据，如果缓存没有，通过primaryQuery方法从DB读取并回写缓存再返回数据
 	return cc.cache.TakeCtx(ctx, v, keyer(primaryKey), func(v interface{}) error {
 		return primaryQuery(ctx, cc.db, v, primaryKey)
 	})

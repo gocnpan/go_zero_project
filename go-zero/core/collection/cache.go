@@ -104,10 +104,13 @@ func (c *Cache) Set(key string, value interface{}) {
 	c.lruCache.add(key)
 	c.lock.Unlock()
 
+	// 看在 data map 中有没有存在这个key
 	expiry := c.unstableExpiry.AroundDuration(c.expire)
 	if ok {
+		// 存在，则更新 expire -> MoveTimer()
 		c.timingWheel.MoveTimer(key, expiry)
 	} else {
+		// 第一次设置key -> SetTimer()
 		c.timingWheel.SetTimer(key, value, expiry)
 	}
 }

@@ -60,5 +60,18 @@
 没有`ssl`证书的情况下，开启`http`服务，否则开启`https`服务
 - 开启服务的详细代码：[rest/internal/starter.go](../rest/internal/starter.go)
 
+## 补充
+### Prometheus 微服务监控
+在请求服务端时，监控指标数据不断被Prometheus 中间件搜集。
+1. HistogramVec 负责请求耗时搜集：
+   - bucket 存放的就是 option 指定的耗时指标。某个请求耗时多少就会被聚集对应的桶，计数。
+   - 最终展示的就是一个路由在不同耗时的分布，很直观提供给开发者可以优化的区域。
+
+
+2. CounterVec 负责指定 labels 标签搜集：
+   - Labels: []string{"path", "code"}
+   - labels 相当一个 tuple。go-zero 是以(path, code)作为整体，记录不同路由不同状态码的返回次数。如果 4xx,5xx过多的时候，是不是应该看看你的服务健康程度？
+
+
 
 

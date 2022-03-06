@@ -206,11 +206,13 @@ func (c *cluster) handleWatchEvents(key string, events []*clientv3.Event) {
 	}
 }
 
+// 从etcd中获取指定服务的所有地址
 func (c *cluster) load(cli EtcdClient, key string) {
 	var resp *clientv3.GetResponse
 	for {
 		var err error
 		ctx, cancel := context.WithTimeout(c.context(cli), RequestTimeout)
+		// 从etcd中获取指定服务的所有地址
 		resp, err = cli.Get(ctx, makeKeyPrefix(key), clientv3.WithPrefix())
 		cancel()
 		if err == nil {
@@ -282,14 +284,16 @@ func (c *cluster) reload(cli EtcdClient) {
 	}
 }
 
+// 监听服务地址的变化
 func (c *cluster) watch(cli EtcdClient, key string) {
-	for {
+ 	for {
 		if c.watchStream(cli, key) {
 			return
 		}
 	}
 }
 
+// 监听服务地址的变化
 func (c *cluster) watchStream(cli EtcdClient, key string) bool {
 	rch := cli.Watch(clientv3.WithRequireLeader(c.context(cli)), makeKeyPrefix(key), clientv3.WithPrefix())
 	for {
@@ -308,6 +312,7 @@ func (c *cluster) watchStream(cli EtcdClient, key string) bool {
 				return false
 			}
 
+			// 监听变化通知更新
 			c.handleWatchEvents(key, wresp.Events)
 		case <-c.done:
 			return true

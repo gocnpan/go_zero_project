@@ -32,9 +32,9 @@ type (
 
 	featuredRoutes struct {
 		timeout   time.Duration // 超时
-		priority  bool // 优先权
+		priority  bool // 是否优先级
 		jwt       jwtSetting
-		signature signatureSetting // 签名
-		routes    []Route // 路由
+		signature signatureSetting // 验签配置
+		routes    []Route // 通过AddRoutes添加的路由
 	}
 )

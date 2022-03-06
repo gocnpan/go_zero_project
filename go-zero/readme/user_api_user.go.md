@@ -2,6 +2,20 @@
 以`user/api/user.go`为切入口，阅读源代码
 [`code/service/user/api/user.go`](../../code/service/user/api/user.go)
 
+## [原理](https://www.jianshu.com/p/757fb855c349)
+### 中间件
+web框架中的中间件是实现业务和非业务功能解耦的一种方式，在web框架中我们可以通过中间件来实现诸如鉴权、限流、熔断等等功能，中间件的原理流程如下图： \
+![](img/middleware-1.png)
+
+rest框架中内置了非常丰富的中间件，在rest/handler路径下，通过alice工具把所有中间件链接起来，当发起请求时会依次通过每一个中间件，当满足所有条件后最终请求才会到达真正的业务Handler执行业务逻辑，上面介绍的jwt鉴权就是通过authHandler来实现的。
+
+### 路由原理
+rest框架中通过AddRoutes方法来注册路由，每一个Route有Method、Path和Handler三个属性，Handler类型为http.HandlerFunc，添加的路由会被换成featuredRoutes。
+
+路由数据结构图： \
+![](img/router-1.png)
+
+
 ## `main`方法
 1. 从运行命令中获取配置文件信息，配置文件路径默认为`etc/user.yaml`
 

@@ -72,7 +72,7 @@ func (pr *patRouter) Handle(method, reqPath string, handler http.Handler) error 
 func (pr *patRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	reqPath := path.Clean(r.URL.Path)
 	if tree, ok := pr.trees[r.Method]; ok {
-		if result, ok := tree.Search(reqPath); ok {
+		if result, ok := tree.Search(reqPath); ok { // 在树中搜索对应的handler
 			if len(result.Params) > 0 {
 				r = pathvar.WithVars(r, result.Params)
 			}

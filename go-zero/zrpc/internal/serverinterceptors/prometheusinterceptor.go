@@ -34,6 +34,9 @@ var (
 )
 
 // UnaryPrometheusInterceptor reports the statistics to the prometheus server.
+// 拦截器主要是对服务的监控指标进行收集
+// 这里主要是对RPC方法的耗时和调用错误进行收集
+// 这里主要使用了 Prometheus 的 Histogram 和 Counter 数据类型
 func UnaryPrometheusInterceptor(ctx context.Context, req interface{},
 	info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 	if !prometheus.Enabled() {

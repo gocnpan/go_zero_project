@@ -48,6 +48,7 @@ type (
 // NewClient returns a Client.
 func NewClient(target string, opts ...ClientOption) (Client, error) {
 	var cli client
+	// 负载均衡模块
 	opts = append([]ClientOption{WithDialOption(grpc.WithBalancerName(p2c.Name))}, opts...)
 	if err := cli.dial(target, opts...); err != nil {
 		return nil, err

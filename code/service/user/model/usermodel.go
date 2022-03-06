@@ -15,11 +15,11 @@ import (
 
 var (
 	// User 结构体：对应mysql中的字段
-	userFieldNames          = builder.RawFieldNames(&User{}) // 将 User结构体 转换为 字段slice
+	userFieldNames = builder.RawFieldNames(&User{}) // 将 User结构体 转换为 字段slice
 	// 字段名构成的字符串
-	userRows                = strings.Join(userFieldNames, ",")
+	userRows = strings.Join(userFieldNames, ",")
 	// 除去自动填充的字段，组成字符串
-	userRowsExpectAutoSet   = strings.Join(stringx.Remove(userFieldNames, "`id`", "`create_time`", "`update_time`"), ",")
+	userRowsExpectAutoSet = strings.Join(stringx.Remove(userFieldNames, "`id`", "`create_time`", "`update_time`"), ",")
 	// 除去自动填充字段，组成求值sql语句，如 name=?,gender=?,mobile=?...
 	userRowsWithPlaceHolder = strings.Join(stringx.Remove(userFieldNames, "`id`", "`create_time`", "`update_time`"), "=?,") + "=?"
 
@@ -88,15 +88,22 @@ func (m *defaultUserModel) FindOne(id int64) (*User, error) {
 }
 
 func (m *defaultUserModel) FindOneByMobile(mobile string) (*User, error) {
+	// 生成基于索引的key
 	userMobileKey := fmt.Sprintf("%s%v", cacheUserMobilePrefix, mobile)
 	var resp User
-	err := m.QueryRowIndex(&resp, userMobileKey, m.formatPrimary, func(conn sqlx.SqlConn, v interface{}) (i interface{}, e error) {
-		query := fmt.Sprintf("select %s from %s where `mobile` = ? limit 1", userRows, m.table)
-		if err := conn.QueryRow(&resp, query, mobile); err != nil {
-			return nil, err
-		}
-		return resp.Id, nil
-	}, m.queryPrimary)
+	err := m.QueryRowIndex(&resp, userMobileKey,
+		m.formatPrimary, // 基于主键生成完整数据缓存的key
+		// 基于索引的DB查询方法
+		func(conn sqlx.SqlConn, v interface{}) (i interface{}, e error) {
+			query := fmt.Sprintf("select %s from %s where `mobile` = ? limit 1", userRows, m.table)
+			if err := conn.QueryRow(&resp, query, mobile); err != nil {
+				return nil, err
+			}
+			return resp.Id, nil
+		}, m.queryPrimary)// 基于主键的DB查询方法
+
+	// 错误处理，需要判断是否返回的是sqlc.ErrNotFound，如果是，我们用本package定义的ErrNotFound返回
+	// 避免使用者感知到有没有使用缓存，同时也是对底层依赖的隔离
 	switch err {
 	case nil:
 		return &resp, nil
@@ -132,10 +139,12 @@ func (m *defaultUserModel) Delete(id int64) error {
 	return err
 }
 
+// 基于索引的DB查询方法
 func (m *defaultUserModel) formatPrimary(primary interface{}) string {
 	return fmt.Sprintf("%s%v", cacheUserIdPrefix, primary)
 }
 
+// 基于主键的DB查询方法
 func (m *defaultUserModel) queryPrimary(conn sqlx.SqlConn, v, primary interface{}) error {
 	query := fmt.Sprintf("select %s from %s where `id` = ? limit 1", userRows, m.table)
 	return conn.QueryRow(v, query, primary)

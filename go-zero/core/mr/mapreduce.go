@@ -131,6 +131,8 @@ func ForEach(generate GenerateFunc, mapper ForEachFunc, opts ...Option) {
 
 // MapReduce maps all elements generated from given generate func,
 // and reduces the output elements with given reducer.
+// MapReduce 工具主要用来对批量数据进行并发的处理
+// 以此来提升服务的性能
 func MapReduce(generate GenerateFunc, mapper MapperFunc, reducer ReducerFunc,
 	opts ...Option) (interface{}, error) {
 	panicChan := &onceChan{channel: make(chan interface{})}
@@ -172,6 +174,8 @@ func mapReduceWithPanicChan(source <-chan interface{}, panicChan *onceChan, mapp
 			close(output)
 		})
 	}
+	// cancel方法，mapper和reducer中都可以调用该方法
+	// 调用后主线程收到close信号会立马返回
 	cancel := once(func(err error) {
 		if err != nil {
 			retErr.Set(err)
@@ -180,9 +184,13 @@ func mapReduceWithPanicChan(source <-chan interface{}, panicChan *onceChan, mapp
 		}
 
 		drain(source)
+		// 调用close(ouput)主线程收到Done信号，立马返回
 		finish()
 	})
 
+	// reducer 对 goroutine 对应 mapper写入collector的数据进行处理
+	// 如果reducer中没有手动调用writer.Write
+	// 则最终会执行finish方法对output进行close避免死锁
 	go func() {
 		defer func() {
 			drain(collector)
@@ -195,6 +203,9 @@ func mapReduceWithPanicChan(source <-chan interface{}, panicChan *onceChan, mapp
 		reducer(collector, writer, cancel)
 	}()
 
+	// 消费buildSource产生的数据，每一个item都会起一个goroutine单独处理
+	// 默认最大并发数为16
+	// 可以通过 WithWorkers 进行设置
 	go executeMappers(mapperContext{
 		ctx: options.ctx,
 		mapper: func(item interface{}, w Writer) {
@@ -265,6 +276,8 @@ func buildOptions(opts ...Option) *mapReduceOptions {
 }
 
 func buildSource(generate GenerateFunc, panicChan *onceChan) chan interface{} {
+	// 通过buildSource方法通过执行generate(参数为无缓冲channel)产生数据
+	// 并返回无缓冲的channel，mapper会从该channel中读取数据
 	source := make(chan interface{})
 	go func() {
 		defer func() {
@@ -290,21 +303,22 @@ func drain(channel <-chan interface{}) {
 func executeMappers(mCtx mapperContext) {
 	var wg sync.WaitGroup
 	defer func() {
-		wg.Wait()
+		wg.Wait() // 保证所有的item都处理完成
 		close(mCtx.collector)
 		drain(mCtx.source)
 	}()
 
 	var failed int32
 	pool := make(chan lang.PlaceholderType, mCtx.workers)
+	// 将mapper处理完的数据写入collector
 	writer := newGuardedWriter(mCtx.ctx, mCtx.collector, mCtx.doneChan)
 	for atomic.LoadInt32(&failed) == 0 {
 		select {
-		case <-mCtx.ctx.Done():
+		case <-mCtx.ctx.Done(): // 当调用了cancel会触发立即返回
 			return
 		case <-mCtx.doneChan:
 			return
-		case pool <- lang.Placeholder:
+		case pool <- lang.Placeholder: // 控制最大并发数
 			item, ok := <-mCtx.source
 			if !ok {
 				<-pool
@@ -321,7 +335,8 @@ func executeMappers(mCtx mapperContext) {
 					wg.Done()
 					<-pool
 				}()
-
+				// 对item进行处理
+				// 处理完调用writer.Write把结果写入collector对应的channel中
 				mCtx.mapper(item, writer)
 			}()
 		}

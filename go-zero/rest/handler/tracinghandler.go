@@ -11,6 +11,13 @@ import (
 )
 
 // TracingHandler return a middleware that process the opentelemetry.
+// 将 header -> carrier，获取 header 中的traceId等信息
+// 开启一个新的 span，并把「traceId，spanId」封装在context中
+// 从上述的 carrier「也就是header」获取traceId，spanId。
+// 看header中是否设置
+// 如果没有设置，则随机生成返回
+// 从 request 中产生新的ctx，并将相应的信息封装在 ctx 中，返回
+// 从上述的 context，拷贝一份到当前的 request
 func TracingHandler(serviceName, path string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		propagator := otel.GetTextMapPropagator()
