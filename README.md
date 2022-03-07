@@ -1,7 +1,7 @@
-# Todo
-1. 手写grpc服务注册发现，实现负载均衡
-2. 阅读作者关于go-zero的文章
+# 其他
+Github：https://github.com/Panseng
 
+leetcode刷题项目：https://gitee.com/xiaobei-2022/leetcode_go
 
 # About
 用于记录 [带你十天轻松搞定 Go 微服务系列](https://juejin.cn/user/2348212566892574/posts) 的学习笔记
